@@ -333,7 +333,7 @@ def date_extractor(journal, year_info_only):
         return "-".join(str(x) for x in filter(None, [year, month, day]))
 
 
-def parse_article_info(medline, year_info_only, nlm_category, subscpt = None, supscpt = None):
+def parse_article_info(medline, year_info_only, nlm_category, subscpt = None, supscpt = None, incl_sections = False):
     """Parse article nodes from Medline dataset
 
     Parameters
@@ -361,19 +361,21 @@ def parse_article_info(medline, year_info_only, nlm_category, subscpt = None, su
     else:
         title = ''
 
-    category = 'NlmCategory' if nlm_category else 'Label'
+    if incl_sections:
+        category = 'NlmCategory' if nlm_category else 'Label'
     if article.find('Abstract/AbstractText') is not None:
         # parsing structured abstract
         if len(article.findall('Abstract/AbstractText')) > 1:
             abstract_list = list()
             for abstract in article.findall('Abstract/AbstractText'):
-                section = abstract.attrib.get(category, '')
-                if section != 'UNASSIGNED':
-                    abstract_list.append('\n')
-                    abstract_list.append(abstract.attrib.get(category, ''))
+                if incl_sections:
+                    section = abstract.attrib.get(category, '')
+                    if section != 'UNASSIGNED':
+                        abstract_list.append('\n')
+                        abstract_list.append(abstract.attrib.get(category, ''))
                 section_text = stringify_children(abstract,subscpt,supscpt).strip()
                 abstract_list.append(section_text)
-            abstract = '\n'.join(abstract_list).strip()
+            abstract = ' '.join(abstract_list).strip()
         else:
             abstract = stringify_children(article.find('Abstract/AbstractText'),subscpt,supscpt).strip() or ''
     elif article.find('Abstract') is not None:
