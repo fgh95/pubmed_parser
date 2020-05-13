@@ -49,8 +49,7 @@ def stringify_children(node,subscpt = None, supscpt = None):
             supscpt = ["",""]
 
         asstring = etree.tostring(node).decode("utf-8")
-        if "Pharmacokinetics of Eicosapentaenoic" in asstring:
-            a=1
+        
         if "<sub>" in asstring:
             asstring=asstring.replace("<sub>",subscpt[0])
             asstring = asstring.replace("</sub>", subscpt[1])
@@ -60,13 +59,8 @@ def stringify_children(node,subscpt = None, supscpt = None):
 
         node = etree.fromstring(asstring)
 
-    parts = ([node.text] +
-             list(chain(*([c.text, c.tail] for c in node.getchildren()))) +
-             [node.tail])
 
-
-
-    return ''.join(filter(None, parts))
+    return ''.join(node.itertext())
 
 
 def stringify_affiliation(node):

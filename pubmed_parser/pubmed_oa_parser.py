@@ -252,26 +252,64 @@ def parse_pubmed_references(path):
     return dict_refs
 
 
-def parse_pubmed_paragraph(path, all_paragraph=False):
+def parse_pubmed_paragraph(path, all_paragraph=False, section='body',subscpt = None, supscpt = None):
     """
     Give tree and reference dictionary
     return dictionary of referenced paragraph, section that it belongs to,
     and its cited PMID
     """
     tree = read_xml(path)
+
+
+    # Remove undesired sections
+    for elem in tree.findall("//fig"):
+        elem.getparent().remove(elem)
+
+    for elem in tree.findall("//table-wrap"):
+        elem.getparent().remove(elem)
+
+
+
     dict_article_meta = parse_article_meta(tree)
     pmid = dict_article_meta['pmid']
     pmc = dict_article_meta['pmc']
 
-    paragraphs = tree.xpath('//body//p')
+    
+    if section == 'body':
+        extractor_tag = '//body//p'
+    if section == 'abs':
+        extractor_tag = '//front//abstract//p'
+
+
+    paragraphs = tree.xpath(extractor_tag)
     dict_pars = list()
-    for paragraph in paragraphs:
-        paragraph_text = stringify_children(paragraph)
+
+
+    for par_nber, paragraph in enumerate(paragraphs):
+
+        paragraph_text = stringify_children(paragraph,subscpt,supscpt)
         section = paragraph.find('../title')
         if section is not None:
-            section = stringify_children(section).strip()
+            section = stringify_children(section,subscpt,supscpt).strip()
         else:
             section = ''
+
+        super_section = paragraph.find('../../title')
+        if super_section is not None:
+            super_section = stringify_children(super_section,subscpt,supscpt).strip()
+        else:
+            super_section = ''
+
+        s_super_section = paragraph.find('../../../title')
+        if s_super_section is not None:
+            s_super_section = stringify_children(s_super_section,subscpt,supscpt).strip()
+        else:
+            s_super_section = ''
+
+        if extractor_tag == '//front//abstract//p':
+            section_list = ['Abstract', super_section, section]
+        else:
+            section_list = [s_super_section, super_section, section]
 
         ref_ids = list()
         for reference in paragraph.getchildren():
@@ -279,11 +317,18 @@ def parse_pubmed_paragraph(path, all_paragraph=False):
                 ref_id = reference.attrib['rid']
                 ref_ids.append(ref_id)
 
+        paragraph_text_clean = paragraph_text
+        paragraph_text_clean = paragraph_text_clean.replace("\n", "")
+
         dict_par = {'pmc': pmc,
                     'pmid': pmid,
-                    'reference_ids': ref_ids,
-                    'section': section,
-                    'text': paragraph_text}
+                    'paragraph_id': par_nber,
+                    #   'reference_ids': ref_ids,
+                    'sections': section_list,
+                    'text': paragraph_text_clean}
+
+
+
         if len(ref_ids) >= 1 or all_paragraph:
             dict_pars.append(dict_par)
 
