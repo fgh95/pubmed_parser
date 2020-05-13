@@ -4,7 +4,7 @@ from time import strptime
 from six import string_types
 from lxml import etree
 from itertools import chain
-
+import re 
 
 def remove_namespace(tree):
     """
@@ -36,14 +36,36 @@ def read_xml(path, nxml=False):
     return tree
 
 
-def stringify_children(node):
+def stringify_children(node,subscpt = None, supscpt = None):
     """
     Filters and removes possible Nones in texts and tails
     ref: http://stackoverflow.com/questions/4624062/get-all-text-inside-a-tag-in-lxml
     """
+
+    if subscpt or supscpt:
+        if not subscpt:
+            subscpt = ["",""]
+        if not supscpt:
+            supscpt = ["",""]
+
+        asstring = etree.tostring(node).decode("utf-8")
+        if "Pharmacokinetics of Eicosapentaenoic" in asstring:
+            a=1
+        if "<sub>" in asstring:
+            asstring=asstring.replace("<sub>",subscpt[0])
+            asstring = asstring.replace("</sub>", subscpt[1])
+        if "<sup>" in asstring:
+            asstring=asstring.replace("<sup>",supscpt[0])
+            asstring = asstring.replace("</sup>", supscpt[1])
+
+        node = etree.fromstring(asstring)
+
     parts = ([node.text] +
              list(chain(*([c.text, c.tail] for c in node.getchildren()))) +
              [node.tail])
+
+
+
     return ''.join(filter(None, parts))
 
 

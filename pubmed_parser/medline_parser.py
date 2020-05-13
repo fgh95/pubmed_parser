@@ -333,7 +333,7 @@ def date_extractor(journal, year_info_only):
         return "-".join(str(x) for x in filter(None, [year, month, day]))
 
 
-def parse_article_info(medline, year_info_only, nlm_category):
+def parse_article_info(medline, year_info_only, nlm_category, subscpt = None, supscpt = None):
     """Parse article nodes from Medline dataset
 
     Parameters
@@ -357,7 +357,7 @@ def parse_article_info(medline, year_info_only, nlm_category):
     article = medline.find('Article')
 
     if article.find('ArticleTitle') is not None:
-        title = stringify_children(article.find('ArticleTitle')).strip() or ''
+        title = stringify_children(article.find('ArticleTitle'),subscpt,supscpt).strip() or ''
     else:
         title = ''
 
@@ -371,13 +371,13 @@ def parse_article_info(medline, year_info_only, nlm_category):
                 if section != 'UNASSIGNED':
                     abstract_list.append('\n')
                     abstract_list.append(abstract.attrib.get(category, ''))
-                section_text = stringify_children(abstract).strip()
+                section_text = stringify_children(abstract,subscpt,supscpt).strip()
                 abstract_list.append(section_text)
             abstract = '\n'.join(abstract_list).strip()
         else:
-            abstract = stringify_children(article.find('Abstract/AbstractText')).strip() or ''
+            abstract = stringify_children(article.find('Abstract/AbstractText'),subscpt,supscpt).strip() or ''
     elif article.find('Abstract') is not None:
-        abstract = stringify_children(article.find('Abstract')).strip() or ''
+        abstract = stringify_children(article.find('Abstract'),subscpt,supscpt).strip() or ''
     else:
         abstract = ''
 
@@ -438,7 +438,7 @@ def parse_article_info(medline, year_info_only, nlm_category):
     return dict_out
 
 
-def parse_medline_xml(path, year_info_only=True, nlm_category=False):
+def parse_medline_xml(path, year_info_only=True, nlm_category=False,subscpt=None,supscpt=None):
     """Parse XML file from Medline XML format available at
     ftp://ftp.nlm.nih.gov/nlmdata/.medleasebaseline/gz/
 
@@ -471,7 +471,7 @@ def parse_medline_xml(path, year_info_only=True, nlm_category=False):
     medline_citations = tree.findall('//MedlineCitationSet/MedlineCitation')
     if len(medline_citations) == 0:
         medline_citations = tree.findall('//MedlineCitation')
-    article_list = list(map(lambda m: parse_article_info(m, year_info_only, nlm_category), medline_citations))
+    article_list = list(map(lambda m: parse_article_info(m, year_info_only, nlm_category,subscpt,supscpt), medline_citations))
     delete_citations = tree.findall('//DeleteCitation/PMID')
     dict_delete = [{
         'title': np.nan,
