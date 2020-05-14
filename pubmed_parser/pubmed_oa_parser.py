@@ -322,8 +322,6 @@ def parse_pubmed_paragraph(path, all_paragraph=False, section='body',subscpt = N
 
         dict_par = {'pmc': pmc,
                     'pmid': pmid,
-                    'paragraph_id': par_nber,
-                    #   'reference_ids': ref_ids,
                     'sections': section_list,
                     'text': paragraph_text_clean}
 
