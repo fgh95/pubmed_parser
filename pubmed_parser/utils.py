@@ -50,14 +50,18 @@ def stringify_children(node,subscpt = None, supscpt = None):
 
         asstring = etree.tostring(node).decode("utf-8")
         
-        if "<sub>" in asstring:
-            asstring=asstring.replace("<sub>",subscpt[0])
+        if "<sub " in asstring or "<sub>" in asstring:
+            asstring = asstring.replace("<sub>", subscpt[0])
+            asstring=re.sub(r"<sub .*?>", subscpt[0], asstring)
             asstring = asstring.replace("</sub>", subscpt[1])
-        if "<sup>" in asstring:
-            asstring=asstring.replace("<sup>",supscpt[0])
+        if "<sup " in asstring or "<sup>" in asstring:
+            asstring = asstring.replace("<sup>", supscpt[0])
+            asstring=re.sub(r"<sup .*?>", supscpt[0], asstring)
             asstring = asstring.replace("</sup>", supscpt[1])
-
-        node = etree.fromstring(asstring)
+        try:
+            node = etree.fromstring(asstring)
+        except:
+            a=1
 
 
     return ''.join(node.itertext())

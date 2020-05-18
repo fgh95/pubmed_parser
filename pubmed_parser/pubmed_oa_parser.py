@@ -269,7 +269,6 @@ def parse_pubmed_paragraph(path, all_paragraph=False, section='body',subscpt = N
         elem.getparent().remove(elem)
 
 
-
     dict_article_meta = parse_article_meta(tree)
     pmid = dict_article_meta['pmid']
     pmc = dict_article_meta['pmc']
@@ -318,7 +317,7 @@ def parse_pubmed_paragraph(path, all_paragraph=False, section='body',subscpt = N
                 ref_ids.append(ref_id)
 
         paragraph_text_clean = paragraph_text
-        paragraph_text_clean = paragraph_text_clean.replace("\n", "")
+        paragraph_text_clean = paragraph_text_clean.replace("\n", " ").strip()
 
         dict_par = {'pmc': pmc,
                     'pmid': pmid,
