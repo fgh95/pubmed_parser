@@ -333,6 +333,18 @@ def date_extractor(journal, year_info_only):
         return "-".join(str(x) for x in filter(None, [year, month, day]))
 
 
+inp_list = [["\u0020","\u00A0","\u180E","\u2000","\u2001","\u2002","\u2003","\u2004","\u2005","\u2006","\u2007",
+             "\u2008","\u2009","\u200A","\u200B","\u202F","\u205F","\u3000","\uFEFF"]," "]
+
+def replace_multiple(inp_list,inp_string):
+    """inp_list: 1st element is a list of possible unicode and the second its replacement"""
+
+    assert  len(inp_list) == 2
+    replacement = inp_list[1]
+    for x in inp_list[0]:
+        inp_string = inp_string.replace(x,replacement)
+    return inp_string
+
 def parse_article_info(medline, year_info_only, nlm_category, subscpt = None, supscpt = None, incl_sections = False):
     """Parse article nodes from Medline dataset
 
@@ -361,6 +373,9 @@ def parse_article_info(medline, year_info_only, nlm_category, subscpt = None, su
     else:
         title = ''
 
+    title = replace_multiple(inp_list,title)
+    title = re.sub(' +', ' ',title.replace("\n", "")).strip()
+
     if incl_sections:
         category = 'NlmCategory' if nlm_category else 'Label'
     if article.find('Abstract/AbstractText') is not None:
@@ -382,6 +397,9 @@ def parse_article_info(medline, year_info_only, nlm_category, subscpt = None, su
         abstract = stringify_children(article.find('Abstract'),subscpt,supscpt).strip() or ''
     else:
         abstract = ''
+
+    abstract = replace_multiple(inp_list,abstract)
+    abstract = re.sub(' +', ' ',abstract.replace("\n", "")).strip()
 
     if article.find('AuthorList') is not None:
         authors = article.find('AuthorList').getchildren()

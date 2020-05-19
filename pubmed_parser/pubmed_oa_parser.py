@@ -13,6 +13,19 @@ __all__ = [
 ]
 
 
+inp_list = [["\u0020","\u00A0","\u180E","\u2000","\u2001","\u2002","\u2003","\u2004","\u2005","\u2006","\u2007",
+             "\u2008","\u2009","\u200A","\u200B","\u202F","\u205F","\u3000","\uFEFF"]," "]
+
+def replace_multiple(inp_list,inp_string):
+    """inp_list: 1st element is a list of possible unicode and the second its replacement"""
+
+    assert  len(inp_list) == 2
+    replacement = inp_list[1]
+    for x in inp_list[0]:
+        inp_string = inp_string.replace(x,replacement)
+    return inp_string
+
+
 def list_xml_path(path_dir):
     """
     List full xml path under given directory
@@ -316,11 +329,16 @@ def parse_pubmed_paragraph(path, all_paragraph=False, section='body',subscpt = N
                 ref_id = reference.attrib['rid']
                 ref_ids.append(ref_id)
 
+
+        #section_list = [unidecode(mysection) for mysection in section_list]
+
         paragraph_text_clean = paragraph_text
-        paragraph_text_clean = paragraph_text_clean.replace("\n", " ").strip()
+        paragraph_text_clean = replace_multiple(inp_list,paragraph_text_clean)
+        paragraph_text_clean = re.sub(' +', ' ',paragraph_text_clean.replace("\n", "")).strip()
 
         dict_par = {'pmc': pmc,
                     'pmid': pmid,
+                    'paragraph_id': par_nber,
                     'sections': section_list,
                     'text': paragraph_text_clean}
 
